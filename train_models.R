@@ -5,6 +5,7 @@
 library(tokenizers)  
 library(data.table)
 library(stringr)
+library(fst)
 
 set.seed(123)
 
@@ -20,17 +21,17 @@ corpus_files <- c(
 )
 
 # Sampling rate (use 0.05-0.1 for faster training, 1.0 for full corpus)
-SAMPLE_RATE <- 0.5
+SAMPLE_RATE <- 0.34
 
 # Output directory for model files
-MODEL_DIR <- "model_data"
-dir.create(MODEL_DIR, showWarnings = FALSE)
+output_dir <- "model_data/"
+if (!dir.exists(output_dir)) dir.create(output_dir)
 
 # ============================================================================
 # 2. LOADING DATA AND PREPROCESSING
 # ============================================================================
 
-cat("Loading and sampling corpus files...\n")
+print("Loading and cleaning data...")
 
 load_and_sample <- function(filepath, sample_rate) {
   if (!file.exists(filepath)) {
@@ -58,59 +59,65 @@ load_and_sample <- function(filepath, sample_rate) {
 
 # Load all corpora
 all_lines <- unlist(lapply(corpus_files, load_and_sample, SAMPLE_RATE))
-cat(sprintf("\nTotal lines loaded: %s\n\n", format(length(all_lines), big.mark = ",")))
 
+all_lines <- str_to_lower(all_lines)
+all_lines <- str_replace_all(all_lines, "[^a-z' ]", "") 
+all_lines <- str_squish(all_lines)
 # ============================================================================
 # 3. BUILD N-Gram Tables
 # ============================================================================
 
-build_ngram_table <- function(text_vector, n, min_freq = 3) {
-  cat(sprintf("Generating %d-grams...\n", n))
+build_ngram_table <- function(text_data, n) {
+  print(paste0("Processing ", n, "-grams..."))
   
-  # Generate n-grams (returns a list of character vectors)
-  ng_list <- tokenize_ngrams(text_vector, n = n, n_min = n, lowercase = TRUE)
+  # Tokenize
+  tokens <- tokenize_ngrams(text_data, n = n, n_min = n)
+  tokens <- unlist(tokens)
   
-  # Flatten and count using data.table (extremely memory efficient)
-  dt <- data.table(feature = unlist(ng_list))
-  dt <- dt[, .(frequency = .N), by = feature][!is.na(feature)]
+  # Create frequency table
+  dt <- as.data.table(tokens)
+  setnames(dt, "tokens", "phrase")
+  dt <- dt[, .N, by = phrase]
+  setnames(dt, "N", "freq")
   
-  # Prune low frequencies
-  dt <- dt[frequency >= min_freq]
+  # Pruning: Removing ultra-rare combinations to save memory
+  if (n > 1) dt <- dt[freq > 1] 
+  if (n > 3) dt <- dt[freq > 2]
   
-  # Split into Prefix and Prediction
-  if (n > 1) {
-    # Uses fast base R sub() to split at the LAST space
-    dt[, prefix := sub("\\s\\S+$", "", feature)]
-    dt[, prediction := sub("^.*\\s", "", feature)]
-    
-    # Calculate Probabilities within each prefix group
-    dt[, prob := frequency / sum(frequency), by = prefix]
+  if (n == 1) {
+    # Unigrams are just a sorted list of common words
+    dt <- dt[order(-freq)]
+    write_fst(dt, paste0(output_dir, "ngram_1.fst"), compress = 100)
   } else {
-    dt[, prefix := ""]
-    dt[, prediction := feature]
-    dt[, prob := frequency / sum(frequency)]
+    # Split into Prefix and Prediction
+    # Example for 3-gram: "i love you" -> prefix="i love", prediction="you"
+    dt[, prefix := word(phrase, 1, n - 1)]
+    dt[, prediction := word(phrase, -1)]
+    dt[, phrase := NULL] # Drop full phrase to save space
+    
+    # only keeping the top 4 predictions for every prefix
+    dt <- dt[order(-freq), head(.SD, 4), by = prefix]
+    
+    # Calculate simple probability
+    dt[, prob := freq / sum(freq), by = prefix]
+    
+    # Pre-Keying: Physically sorts data and marks it for binary search
+    setkey(dt, prefix)
+    
+    # Save as .fst 
+    write_fst(dt, paste0(output_dir, "ngram_", n, ".fst"), compress = 100)
   }
-  
-  # Set key for fast binary search in your prediction function
-  setkey(dt, prefix)
-  
-  return(dt[, .(prefix, prediction, prob)])
+  # Cleanup RAM after every loop
+  rm(dt, tokens)
+  gc()
 }
-
-# Saving the names of the models as a vector
-n_gram_models <- list()
-
-for (i in 1:4) {
-  dt <- build_ngram_table(toks, n = i)
-  n_gram_models[[i]] <- build_ngram_table(all_lines, n = i, min_freq = 2)
-}
-
-names(n_gram_models) <- c("unigram", "bigram", "trigram", "quadgram")
 
 # ============================================================================
-# 4. SAVE MODELS
+# 4. EXECUTION LOOP
 # ============================================================================
 
-for (name in names(n_gram_models)) {
-  saveRDS(n_gram_models[[name]], file = paste0("model_data/", name, ".rds"))
+for (i in 5:5) {
+  build_ngram_table(all_lines, i)
 }
+
+print("Training Complete! .fst files are in /model_data")
