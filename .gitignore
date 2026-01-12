@@ -1,2 +1,12 @@
 *.txt
-*.Rproj
+*.user
+*.rproj
+*.rsconnect
+*.jpg
+*.png
+
+# History files
+.Rhistory
+.RData
+
+.Rproj.user/
