@@ -1,0 +1,55 @@
+---
+title: "NextWord N-Gram"
+subtitle: "Intelligent, Frictionless Typing"
+author: "Eric Nielsen"
+date: "`r Sys.Date()`"
+output: 
+  ioslides_presentation:
+    widescreen: true
+    smaller: false
+    transition: faster
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## The Problem: The Typing Bottleneck 
+
+**Communication is fast, but typing is slow.**
+
+- **The Struggle**: We spend hours every day typing on small screens and keyboards.
+
+- **The Cost**: Typos, mental friction, and slow response times hinder productivity.
+
+- **The Gap**: Most basic text editors are passive. They don't "know" your context or help you move faster.
+
+## The Solution: Predicting Your Next Move
+
+NextWord N-Gram uses advanced linguistic modeling to anticipate your thoughts.
+
+- **Intelligence at Scale**: Analyzed millions of sentences from news, blogs, and social media.
+
+- **Context Awareness**: It looks at your last few words to provide the most statistically likely completion.
+
+- **Lightning Fast**: Instant suggestions that keep you in the flow.
+
+## How It Works 
+
+Our algorithm uses N-gram Modeling to understand the "DNA" of English sentences.
+
+1. **Context Analysis**: The model looks at your last 1, 2, or 3 words.
+
+2. **Probability Mapping**: It searches a massive database of human speech patterns.
+
+3. **Smart Backoff**: If the specific phrase is new, the model intelligently "backs off" to more general word patterns to find a match.
+
+## The Road Ahead
+
+**Scaling the Intelligence**
+
+- **Personalization**: Teaching the model to adapt to your specific writing style.
+
+- **Multi-language Support**: Expanding the vocabulary to support global communication.
+
+- **Ecosystem Integration**: Moving from a web app to a seamless tool integrated into email, documents, and messaging.
