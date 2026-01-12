@@ -1,4 +1,4 @@
-NextWord N-Gram Predictor: Intelligent Text Completion
+## NextWord N-Gram Predictor: Intelligent Text Completion
 
 This is a simple predictive text engine designed to simulate the autocomplete features found in modern mobile keyboards. By analyzing large-scale text corpora (blogs, news, and twitter data), the model estimates the probability of the next word based on the user's current context.
 
@@ -27,7 +27,7 @@ This is a simple predictive text engine designed to simulate the autocomplete fe
 ---
 
 **Project Structure**
-
+```
 .
 ├── training_script.R     # Script to clean data and build n-gram tables
 ├── app.R                 # Main Shiny application
@@ -37,7 +37,7 @@ This is a simple predictive text engine designed to simulate the autocomplete fe
 │   ├── trigram.rds
 │   └── quadgram.rds
 └── README.md             # Project documentation
-
+```
 ---
 
 **How It Works**
