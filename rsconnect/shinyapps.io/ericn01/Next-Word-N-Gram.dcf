@@ -1,0 +1,13 @@
+name: Next-Word-N-Gram
+title: Next-Word-N-Gram
+username: ericn01
+account: ericn01
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 16405711
+bundleId: 11431292
+url: https://ericn01.shinyapps.io/Next-Word-N-Gram/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: en_US.blogs.txt|en_US.news.txt|en_US.twitter.txt|README.md|slide_deck.html|slide_deck.Rmd|train_models.R
