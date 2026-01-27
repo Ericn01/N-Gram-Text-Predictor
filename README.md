@@ -31,11 +31,12 @@ This is a simple predictive text engine designed to simulate the autocomplete fe
 .
 ├── training_script.R     # Script to clean data and build n-gram tables
 ├── app.R                 # Main Shiny application
-├── model_data/           # Directory containing pre-trained .rds files
-│   ├── unigram.rds
-│   ├── bigram.rds
-│   ├── trigram.rds
-│   └── quadgram.rds
+├── model_data/           # Directory containing pre-trained .fst files
+│   ├── unigram.fst
+│   ├── bigram.fst
+│   ├── trigram.fst
+│   └── quadgram.fst
+│   └── pentagram.fst
 └── README.md             # Project documentation
 ```
 ---
